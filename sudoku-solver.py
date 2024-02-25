@@ -1,0 +1,88 @@
+from colorama import Fore, Style, init
+
+init(autoreset=True)
+
+sudoku_board = [
+    [5, 3, 0, 0, 7, 0, 0, 0, 0],
+    [6, 0, 0, 1, 9, 5, 0, 0, 0],
+    [0, 9, 8, 0, 0, 0, 0, 6, 0],
+    [8, 0, 0, 0, 6, 0, 0, 0, 3],
+    [4, 0, 0, 8, 0, 3, 0, 0, 1],
+    [7, 0, 0, 0, 2, 0, 0, 0, 6],
+    [0, 6, 0, 0, 0, 0, 2, 8, 0],
+    [0, 0, 0, 0, 1, 9, 0, 0, 5],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+
+
+def possible(row, column, number):
+    global grid
+    # check whether the number appearing in the given row
+    if number in grid[row]:
+        return False
+
+    # Is the number appearing in the given column?
+    if number in [grid[i][column] for i in range(9)]:
+        return False
+
+    # check whether the number appearing in the given square
+    x0, y0 = (column // 3) * 3, (row // 3) * 3
+    if number in [grid[y0 + i][x0 + j] for i in range(3) for j in range(3)]:
+        return False
+
+    return True
+
+
+def solve():
+    global grid
+    found_solution = [False]
+
+    def solve_recursive(row, column):
+        nonlocal found_solution
+
+        if row == 9:
+            # If reached the end of the grid, a solution is found
+            found_solution[0] = True
+            print_grid(grid)
+            return
+
+        next_row = row + 1 if column == 8 else row
+        next_column = (column + 1) % 9
+
+        if grid[row][column] == 0:
+            for number in range(1, 10):
+                if possible(row, column, number):
+                    grid[row][column] = number
+                    solve_recursive(next_row, next_column)
+
+                    if found_solution[0]:
+                        return
+
+                    grid[row][column] = 0
+        else:
+            solve_recursive(next_row, next_column)
+
+    solve_recursive(0, 0)
+
+
+def print_grid(grid):
+    print(Style.BRIGHT + Fore.RED + "Sudoku Grid:" + Style.RESET_ALL)
+    for i, row in enumerate(grid):
+        if i % 3 == 0 and i > 0:
+            print("-" * 21)
+
+        for j, cell in enumerate(row):
+            if j % 3 == 0 and j > 0:
+                print("|", end=" ")
+
+            if cell == 0:
+                print(Fore.WHITE + "0", end=" ")
+            else:
+                print(Fore.CYAN + str(cell), end=" ")
+
+        print()
+
+
+print_grid(sudoku_board)
+input(Fore.GREEN + 'Press Enter to start solving Sudoku.' + Style.RESET_ALL)
+solve()
